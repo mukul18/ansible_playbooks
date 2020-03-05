@@ -1,9 +1,9 @@
 - hosts: localhost
   vars:
-   # - config: "{{ playbook_dir }}/{{ oneview_config }}"
-    - config: "/usr/share/ansible/plugins/modules/oneview_config160.json"
-    - server_profile_template_name: DeployBaremetalTest
-    - iso_url: 'http://10.188.191.33/iso/rhel8-4.iso'
+    - config: "{{ playbook_dir }}/{{ oneview_config }}"
+    - server_profile_template_name: BOSCH_ESXi3PARWithLocalStore
+    - iso_url: 'http://10.188.191.33/iso/custom-VMware-ESXi-6.7.0-Update3-15160138-HPE-Gen9plus-670.U3.10.5.0.48-Dec2019.iso'
+    - server_profile_name: TestServerProfile
     - server_hardware_name: ""
     - ilo_ip_address: ""
     - session: ""
@@ -34,7 +34,7 @@
         config: "{{ config }}"
         state: present
         data:
-          name: TestServerProfile
+          name: "{{ server_profile_name }}"
           serverProfileTemplateName: "{{ server_profile_template_name }}"
           serverHardwareName: "{{ server_hardware_name }}"
       when: server_hardware_name != "" 
