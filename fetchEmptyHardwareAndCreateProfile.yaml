@@ -1,6 +1,7 @@
 - hosts: localhost
   vars:
-    - config: "{{ playbook_dir }}/{{ oneview_config }}"
+   # - config: "{{ playbook_dir }}/{{ oneview_config }}"
+    - config: "/usr/share/ansible/plugins/modules/oneview_config160.json"
     - server_profile_template_name: DeployBaremetalTest
     - iso_url: 'http://10.188.191.33/iso/rhel8-4.iso'
     - server_hardware_name: ""
