@@ -1,7 +1,7 @@
 - hosts: localhost
   vars:
     - config: "/usr/share/ansible/plugins/modules/oneview_config160.json"
-    - ansible_python_interpreter: /usr/local/bin/python3.7
+   # - ansible_python_interpreter: /usr/local/bin/python3.7
     - server_profile_template_name: BOSCH_ESXi3PARWithLocalStore
     - iso_url: 'http://10.188.191.33/iso/custom-VMware-ESXi-6.7.0-Update3-15160138-HPE-Gen9plus-670.U3.10.5.0.48-Dec2019.iso'
     - server_profile_name: TestServerProfile
