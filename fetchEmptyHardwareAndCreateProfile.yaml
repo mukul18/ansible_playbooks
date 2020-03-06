@@ -14,6 +14,8 @@
         config: "{{ config }}"
         name: "{{ server_profile_template_name }}"
       delegate_to: localhost
+      vars:
+        ansible_python_interpreter: /usr/local/bin/python3.7
 
     - name: Gather server hardware having no profiles
       oneview_server_hardware_facts:
