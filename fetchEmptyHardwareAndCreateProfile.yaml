@@ -1,7 +1,6 @@
 - hosts: localhost
   vars:
     - config: "/usr/share/ansible/plugins/modules/oneview_config160.json"
-   # - ansible_python_interpreter: /usr/local/bin/python3.7
     - server_profile_template_name: BOSCH_ESXi3PARWithLocalStore
     - iso_url: 'http://10.188.191.33/iso/custom-VMware-ESXi-6.7.0-Update3-15160138-HPE-Gen9plus-670.U3.10.5.0.48-Dec2019.iso'
     - server_profile_name: TestServerProfile
@@ -14,8 +13,6 @@
         config: "{{ config }}"
         name: "{{ server_profile_template_name }}"
       delegate_to: localhost
-      vars:
-        ansible_python_interpreter: /usr/local/bin/python3.7
 
     - name: Gather server hardware having no profiles
       oneview_server_hardware_facts:
@@ -31,6 +28,16 @@
     - set_fact: 
         server_hardware_name: "{{ server_hardwares[0].name }}"
       when: server_hardwares|length > 0
+    - set_fact:
+        server_hardware_name_split: "{{ server_hardware_name.split(',') }}"
+      when: server_hardwares|length > 0
+    - set_fact:
+        bay_name: "{{ server_hardware_name_split[1] }}"
+      when: server_hardwares|length > 0
+    - set_fact:
+        server_profile_name: "{{ ( server_profile_name + bay_name )}}"
+      when: server_hardwares|length > 0
+
  
     - name: Create server profile from template
       oneview_server_profile:
