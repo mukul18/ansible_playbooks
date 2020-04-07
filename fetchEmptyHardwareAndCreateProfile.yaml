@@ -1,8 +1,8 @@
 - hosts: localhost
   vars:
     - config: "/usr/share/ansible/plugins/modules/oneview_config160.json"
-    - server_profile_template_name: BOSCH_ESXi3PARWithLocalStore
-    - iso_url: 'http://10.188.191.33/iso/custom-VMware-ESXi-6.7.0-Update3-15160138-HPE-Gen9plus-670.U3.10.5.0.48-Dec2019.iso'
+    - server_profile_template_name: CentosTemplate
+    - iso_url: 'http://10.188.191.33/iso/centos7WithAnsible.iso'
     - server_profile_name: TestServerProfile
     - server_hardware_name: ""
     - ilo_ip_address: ""

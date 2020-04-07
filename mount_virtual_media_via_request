@@ -21,13 +21,13 @@ def request_op(operation, host, suburi, request_headers, request_body, x_auth_to
 	if( x_auth_token ):
 		request_headers['X-Auth-Token'] = x_auth_token
 
-	if( operation.casefold() == 'get'):
+	if( operation.lower() == 'get'):
 		 resp = session.get(reqUrl, headers=request_headers, verify=False)
-	elif( operation.casefold() == 'post'):
+	elif( operation.lower() == 'post'):
 		resp = session.post(reqUrl, data=request_body, headers=request_headers, verify=False)
-	elif( operation.casefold() == 'patch'):
+	elif( operation.lower() == 'patch'):
 		resp = session.patch(reqUrl, data=request_body, headers=request_headers, verify=False)
-	elif( operation.casefold() == 'delete'):
+	elif( operation.lower() == 'delete'):
 		resp = session.delete(reqUrl, headers=request_headers, verify=False)
 	
 	if isinstance(resp.status_code ,str):
