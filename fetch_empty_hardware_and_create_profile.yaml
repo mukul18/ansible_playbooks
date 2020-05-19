@@ -1,6 +1,6 @@
 - hosts: localhost
   vars:
-    - config: "{{ playbook_dir }}/{{ oneview_config }}"
+    - config: "/root/Mukul/New_code/oneview_ansible_playbooks/oneview_config160.json"
     - server_profile_template_name: CentosTemplate
     - iso_url: 'http://10.188.191.33/iso/custom-CentOS-7-x86_64-DVD-1810.iso'
     - server_profile_name: AnsibleProfile
