@@ -1,6 +1,6 @@
 - hosts: localhost
   vars:
-    - config: "/root/Mukul/New_code/oneview_ansible_playbooks/oneview_config160.json"
+    - config: "{{ playbook_dir }}/{{ oneview_config }}"
     - server_profile_template_name: CentosTemplate
     - iso_url: 'http://10.188.191.33/iso/custom-CentOS-7-x86_64-DVD-1810.iso'
     - server_profile_name: AnsibleProfile
@@ -55,7 +55,7 @@
     - name: Gather sso ilo url facts about a Server Hardware
       oneview_server_hardware_facts:
         config: "{{ config }}"
-        name: "{{ server_hardwares[0].name }}"
+        name: "{{ server_hardware_name }}"
         options:
           - remoteConsoleUrl 
       when: server_hardware_name != "" 
@@ -105,6 +105,31 @@
       delegate_to: localhost   
 
     - pause: minutes=35
+
+    - name: Gather sso ilo url facts about a Server Hardware
+      oneview_server_hardware_facts:
+        config: "{{ config }}"
+        name: "{{ server_hardware_name }}"
+        options:
+          - remoteConsoleUrl
+      when: server_hardware_name != ""
+      delegate_to: localhost
+    - debug:
+        var: server_hardware_remote_console_url
+
+    - set_fact:
+        remote_console_url: "{{ server_hardware_remote_console_url.remoteConsoleUrl }}"
+      when: server_hardwares|length > 0
+    - set_fact:
+        split_uri_session: "{{ remote_console_url.split('&') }}"
+      when: server_hardwares|length > 0
+    - set_fact:
+        ilo_ip_address: "{{ split_uri_session[0].split('=')[1] }}"
+      when: server_hardwares|length > 0
+    - set_fact:
+        session: "{{ split_uri_session[1].split('=')[1] }}"
+      when: server_hardwares|length > 0
+
     - name: Fetch ethernet details of the server
       get_network_ip_address:
         uri: "{{ ilo_ip_address }}"
