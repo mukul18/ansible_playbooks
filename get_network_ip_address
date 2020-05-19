@@ -1,0 +1,92 @@
+import requests
+import argparse
+import pprint
+import json
+
+from ansible.module_utils.basic import *
+
+
+ilo_ethernet_interface_api = "/redfish/v1/Systems/1/EthernetInterfaces"
+ilo_system_api = "/redfish/v1/Systems"
+session = None
+
+
+def request_op(operation, host, suburi, request_headers, request_body, x_auth_token=None):
+	session = requests.Session()
+	session.trust_env = False
+	resp = None
+
+	reqUrl = "https://" + host + suburi 
+
+	if( x_auth_token ):
+		request_headers['X-Auth-Token'] = x_auth_token
+
+	if( operation.lower() == 'get'):
+		 resp = session.get(reqUrl, headers=request_headers, verify=False)
+	elif( operation.lower() == 'post'):
+		resp = session.post(reqUrl, data=request_body, headers=request_headers, verify=False)
+	elif( operation.lower() == 'patch'):
+		resp = session.patch(reqUrl, data=request_body, headers=request_headers, verify=False)
+	elif( operation.lower() == 'delete'):
+		resp = session.delete(reqUrl, headers=request_headers, verify=False)
+	
+	if isinstance(resp.status_code ,str):
+		# The response status received is a string. So converted to this format.
+		if (resp.status_code != str(200)):
+			raise Exception("Failed to do GET. Status code = {}\nError Message = {}.".format(resp.status_code, resp.text))
+			module.fail_json(msg=suburi+" Returned status code that is not 200")
+	else:
+		if (resp.status_code != 200):
+			raise Exception("Failed to do GET. Status code = {}\nError Message = {}.".format(resp.status_code, resp.text))
+			module.fail_json(msg=suburi+" Returned status code that is not 200")
+	
+	return resp.json()
+
+
+
+def do_get(host, ilo_api, headers, session_id):
+	return request_op('get', host, ilo_api, headers, None, session_id)
+
+def do_patch(host, ilo_api, headers, request_body, session_id):
+	return request_op('patch', host, ilo_api, headers, request_body, session_id)
+
+def get_network_ip_address( host, session_id):
+	ip_address = ''
+	headers = { 'content-type': 'application/json', 'accept': 'application/json' }
+	# fetch network data to fetch ip address
+	response = do_get(host, ilo_ethernet_interface_api, headers, session_id)
+	for member in range(len(response["Members"])) :
+		#pprint.pprint(response["Members"][member]["@odata.id"])	
+		ethernet_interface_member_url = response["Members"][member]["@odata.id"]
+		ethernet_interface_member_response = do_get(host, ethernet_interface_member_url, headers, session_id)
+		#pprint.pprint(ethernet_interface_member_response)
+		if not (( 'IPv4Addresses' not in ethernet_interface_member_response ) or ( len(ethernet_interface_member_response["IPv4Addresses"]) == 0 )):
+			#pprint.pprint('IPv4Addresses not found in ethernet interface')
+		#else:
+			ip_address =  ethernet_interface_member_response["IPv4Addresses"][0]["Address"]
+			#ip_address =  ethernet_interface_member_response["IPv4Addresses"][0]["Address"]
+			#pprint.pprint(ip_address)
+	return ip_address
+
+def main():
+	module = AnsibleModule(
+		argument_spec=dict(
+		uri=dict(required=True, type='str'),
+		session_id=dict(required=True, type='str'),
+	))
+
+	session_id = module.params['session_id']
+	host = module.params['uri']
+
+	response = get_network_ip_address( host, session_id)
+	extra_msg=""
+	
+	print(response)
+	if(response != ""):
+		extra_msg="FoundIPAddress"
+
+	network_response={'ip_address':response}
+	module.exit_json(changed=True, msg=network_response, stdout=extra_msg)	
+
+if __name__ == '__main__':
+	 main()
