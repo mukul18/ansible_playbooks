@@ -1,9 +1,9 @@
 - hosts: localhost
   vars:
-    - config: "/usr/share/ansible/plugins/modules/oneview_config160.json"
+    - config: "{{ playbook_dir }}/{{ oneview_config }}"
     - server_profile_template_name: CentosTemplate
-    - iso_url: 'http://10.188.191.33/iso/centos7WithAnsible.iso'
-    - server_profile_name: TestServerProfile
+    - iso_url: 'http://10.188.191.33/iso/custom-CentOS-7-x86_64-DVD-1810.iso'
+    - server_profile_name: AnsibleProfile
     - server_hardware_name: ""
     - ilo_ip_address: ""
     - session: ""
@@ -37,8 +37,9 @@
     - set_fact:
         server_profile_name: "{{ ( server_profile_name + bay_name )}}"
       when: server_hardwares|length > 0
+    #- debug:
+    #    msg: '{{ server_profile_name }}'
 
- 
     - name: Create server profile from template
       oneview_server_profile:
         config: "{{ config }}"
@@ -102,3 +103,33 @@
             powerControl: "MomentaryPress"
       when: server_hardware_name != "" 
       delegate_to: localhost   
+
+    - pause: minutes=35
+    - name: Fetch ethernet details of the server
+      get_network_ip_address:
+        uri: "{{ ilo_ip_address }}"
+        session_id: "{{ session }}"
+      register: network_response
+      when:
+        - ilo_ip_address != ""
+        - session != ""
+      delegate_to: localhost
+      until: network_response.stdout.find("FoundIPAddress") != -1
+      retries: 5
+      delay: 300
+    - debug:
+        msg: '{{ network_response }}'
+
+
+    - set_fact:
+        response: "{{ network_response.msg }}"
+      when: network_response.stdout.find("FoundIPAddress") != -1
+
+    - set_fact:
+        ip_address: "{{ response.ip_address }}"
+      when: network_response.stdout.find("FoundIPAddress") != -1
+
+    - debug:
+        msg: '{{ ip_address }}'
+      when: network_response.stdout.find("FoundIPAddress") != -1
+
